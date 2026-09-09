@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+</style>
+</helmet>
+<div class="min-h-screen bg-[#f1f7f5] text-[#1c2321] font-sans px-4 sm:px-6 py-8 sm:py-12">
+<div class="max-w-3xl mx-auto">
+
+<header class="mb-8">
+<div class="text-xs font-semibold tracking-wide uppercase text-teal-600 mb-1">Energy needs</div>
+<h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-2">TDEE Calculator</h1>
+<p class="text-sm text-[#5b6b66] max-w-xl">Estimate your Basal Metabolic Rate and Total Daily Energy Expenditure using the Mifflin&ndash;St&nbsp;Jeor equation.</p>
+</header>
+
+<section class="bg-white border border-[#d6e5e0] rounded-xl p-5 sm:p-6 shadow-sm grid gap-5">
+
+<div class="grid gap-4 sm:grid-cols-3">
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Sex</label>
+<div class="flex rounded-lg border border-[#d6e5e0] overflow-hidden">
+<sc-for list="{{ genderOptions }}" as="opt" hint-placeholder-count="2">
+<button type="button" onClick="{{ opt.onClick }}" class="{{ opt.cls }}">{{ opt.label }}</button>
+</sc-for>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Units</label>
+<div class="flex rounded-lg border border-[#d6e5e0] overflow-hidden">
+<sc-for list="{{ unitOptions }}" as="opt" hint-placeholder-count="2">
+<button type="button" onClick="{{ opt.onClick }}" class="{{ opt.cls }}">{{ opt.label }}</button>
+</sc-for>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Age (years)</label>
+<input type="number" min="1" max="120" placeholder="e.g. 32" value="{{ age }}" onChange="{{ onAge }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+</div>
+</div>
+
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Life stage</label>
+<select value="{{ lifeStage }}" onChange="{{ onLifeStage }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 cursor-pointer bg-white">
+<sc-for list="{{ lifeStageOptions }}" as="opt" hint-placeholder-count="3">
+<option value="{{ opt.value }}" selected="{{ opt.selected }}">{{ opt.label }}</option>
+</sc-for>
+</select>
+</div>
+
+<div class="grid gap-4 sm:grid-cols-2">
+<sc-if value="{{ isMetric }}" hint-placeholder-val="{{ true }}">
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Height (cm)</label>
+<input type="number" placeholder="e.g. 168" value="{{ heightCm }}" onChange="{{ onHeightCm }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+</div>
+</sc-if>
+<sc-if value="{{ isImperial }}" hint-placeholder-val="{{ false }}">
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Height (ft / in)</label>
+<div class="flex gap-2">
+<input type="number" placeholder="ft" value="{{ heightFt }}" onChange="{{ onHeightFt }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+<input type="number" placeholder="in" value="{{ heightIn }}" onChange="{{ onHeightIn }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ isMetric }}" hint-placeholder-val="{{ true }}">
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Weight (kg)</label>
+<input type="number" placeholder="e.g. 62" value="{{ weightKg }}" onChange="{{ onWeightKg }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+</div>
+</sc-if>
+<sc-if value="{{ isImperial }}" hint-placeholder-val="{{ false }}">
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Weight (lb)</label>
+<input type="number" placeholder="e.g. 137" value="{{ weightLb }}" onChange="{{ onWeightLb }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+</div>
+</sc-if>
+</div>
+
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Known BMR (optional, kcal/day)</label>
+<input type="number" min="0" placeholder="Leave blank to calculate from the fields above" value="{{ manualBmr }}" onChange="{{ onManualBmr }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+<p class="text-xs text-[#8ea39c] mt-1">If you already know your BMR (e.g. from a lab test), enter it here to skip the Mifflin&ndash;St Jeor estimate.</p>
+</div>
+
+<div>
+<label class="block text-xs font-medium text-[#5b6b66] mb-1.5">Activity level</label>
+<select value="{{ activity }}" onChange="{{ onActivity }}" class="w-full min-h-[38px] px-3 py-2 text-sm rounded-lg border border-[#d6e5e0] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 cursor-pointer bg-white">
+<sc-for list="{{ activityOptions }}" as="opt" hint-placeholder-count="5">
+<option value="{{ opt.value }}" selected="{{ opt.selected }}">{{ opt.label }}</option>
+</sc-for>
+</select>
+</div>
+
+<sc-if value="{{ error }}" hint-placeholder-val="{{ false }}">
+<div class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">{{ error }}</div>
+</sc-if>
+
+<button type="button" onClick="{{ onCalculate }}" class="justify-self-start inline-flex items-center justify-center gap-2 cursor-pointer font-semibold text-sm text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 px-6 py-2.5 rounded-lg shadow-sm transition-colors">Calculate</button>
+
+</section>
+
+<sc-if value="{{ result }}" hint-placeholder-val="{{ false }}">
+<section class="mt-6 grid gap-6">
+
+<div class="grid gap-4 sm:grid-cols-2">
+<div class="bg-white border border-[#d6e5e0] rounded-xl p-5 flex flex-col gap-1.5 shadow-sm">
+<div class="text-[10px] font-semibold tracking-wide uppercase text-[#5b6b66]">Basal Metabolic Rate</div>
+<div class="text-3xl font-bold tracking-tight">{{ result.bmr }} <span class="text-sm font-normal text-[#8ea39c]">kcal/day</span></div>
+<p class="text-sm text-[#5b6b66] m-0">{{ result.bmrSource }}</p>
+</div>
+<div class="bg-teal-50 border border-teal-200 rounded-xl p-5 flex flex-col gap-1.5 shadow-sm">
+<div class="text-[10px] font-semibold tracking-wide uppercase text-teal-600">Total Daily Energy Expenditure</div>
+<div class="text-3xl font-bold tracking-tight">{{ result.tdee }} <span class="text-sm font-normal text-[#8ea39c]">kcal/day</span></div>
+<p class="text-sm text-[#5b6b66] m-0">BMR plus your activity level{{ tdeeNoteSuffix }}.</p>
+</div>
+</div>
+
+<div>
+<h3 class="text-lg font-semibold mb-3">Calorie targets</h3>
+<p class="text-xs text-[#8ea39c] mb-2 -mt-2">Select a target to see its macro split below.</p>
+<div class="grid gap-3 sm:grid-cols-3">
+<sc-for list="{{ targetCards }}" as="card" hint-placeholder-count="3">
+<button type="button" onClick="{{ card.onClick }}" class="{{ card.cls }} text-left rounded-lg px-4 py-3 cursor-pointer">
+<div class="{{ card.labelCls }} text-[10px] font-semibold tracking-wide uppercase">{{ card.label }}</div>
+<div class="text-xl font-bold">{{ card.kcal }} kcal</div>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div>
+<h3 class="text-lg font-semibold mb-3">Macro split at {{ selectedTargetLabel }}</h3>
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-sm">
+<thead>
+<tr>
+<th class="text-left text-[11px] font-semibold tracking-wide uppercase text-[#5b6b66] pb-2 border-b border-[#d6e5e0]">Protein &mdash; {{ result.proteinPct }}%</th>
+<th class="text-left text-[11px] font-semibold tracking-wide uppercase text-[#5b6b66] pb-2 border-b border-[#d6e5e0]">Carbs &mdash; {{ result.carbPct }}%</th>
+<th class="text-left text-[11px] font-semibold tracking-wide uppercase text-[#5b6b66] pb-2 border-b border-[#d6e5e0]">Fat &mdash; {{ result.fatPct }}%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="pt-2 font-bold text-lg">{{ result.proteinG }} g</td>
+<td class="pt-2 font-bold text-lg">{{ result.carbG }} g</td>
+<td class="pt-2 font-bold text-lg">{{ result.fatG }} g</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<sc-if value="{{ result.note }}" hint-placeholder-val="{{ false }}">
+<p class="m-0 text-sm text-[#5b6b66] max-w-2xl">{{ result.note }}</p>
+</sc-if>
+
+</section>
+</sc-if>
+
+<footer class="mt-10 pt-4 border-t border-[#d6e5e0] text-xs text-[#8ea39c]">
+Estimates only, not medical advice. Formula: Mifflin&ndash;St Jeor (1990).
+</footer>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;macroPreset&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;balanced&quot;, &quot;options&quot;: [&quot;balanced&quot;, &quot;highprotein&quot;, &quot;lowcarb&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Targets&quot; },
+  &quot;cutPct&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 20, &quot;min&quot;: 5, &quot;max&quot;: 25, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Targets&quot; },
+  &quot;gainPct&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 15, &quot;min&quot;: 5, &quot;max&quot;: 25, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Targets&quot; },
+  &quot;defaultUnits&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;metric&quot;, &quot;options&quot;: [&quot;metric&quot;, &quot;imperial&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Defaults&quot; }
+}">
+class Component extends DCLogic {
+  static LIFE_STAGE_INFO = {
+    standard: { label: 'Standard adult', adjust: 0, note: null },
+    teen: { label: 'Teen (13\u201317)', adjust: 0, note: 'Mifflin\u2013St Jeor is validated for adults; growing teens have added needs best reviewed with a pediatrician.' },
+    older: { label: 'Older adult (65+)', adjust: 0, note: 'Muscle mass tends to decline with age \u2014 favor resistance activity and adequate protein intake.' },
+    pregnant: { label: 'Pregnant', adjust: 340, note: 'Includes an average +340 kcal/day for 2nd\u20133rd trimester needs \u2014 ask your provider for trimester-specific guidance.' },
+    breastfeeding: { label: 'Breastfeeding', adjust: 400, note: 'Includes an average +400 kcal/day for exclusive breastfeeding.' },
+    perimenopause: { label: 'Perimenopause', adjust: 0, note: 'Shifting hormones can lower BMR and redistribute fat \u2014 favor strength training and adequate protein as needs shift.' },
+    menopause: { label: 'Menopause / postmenopause', adjust: -50, note: 'Reflects a modest average drop in resting metabolism after menopause \u2014 strength training and protein help preserve lean mass.' }
+  };
+
+  static ACTIVITY_LEVELS = [
+    { value: 'sedentary', label: 'Sedentary', desc: 'little or no exercise', mult: 1.2 },
+    { value: 'light', label: 'Lightly active', desc: 'exercise 1\u20133 days/week', mult: 1.375 },
+    { value: 'moderate', label: 'Moderately active', desc: 'exercise 3\u20135 days/week', mult: 1.55 },
+    { value: 'active', label: 'Very active', desc: 'exercise 6\u20137 days/week', mult: 1.725 },
+    { value: 'veryactive', label: 'Extremely active', desc: 'hard exercise & physical job', mult: 1.9 }
+  ];
+
+  static MACRO_PRESETS = {
+    balanced: { p: 0.3, c: 0.4, f: 0.3 },
+    highprotein: { p: 0.4, c: 0.3, f: 0.3 },
+    lowcarb: { p: 0.35, c: 0.25, f: 0.4 }
+  };
+
+  state = {
+    gender: 'female',
+    units: this.props.defaultUnits === 'imperial' ? 'imperial' : 'metric',
+    lifeStage: 'standard',
+    age: '', heightCm: '', heightFt: '', heightIn: '', weightKg: '', weightLb: '',
+    activity: 'moderate',
+    manualBmr: '',
+    macroTarget: 'maintain',
+    result: null,
+    error: ''
+  };
+
+  setField = (key) => (e) => {
+    const val = e && e.target ? e.target.value : e;
+    this.setState({ [key]: val });
+  };
+
+  setGender = (g) => {
+    this.setState((s) => ({
+      gender: g,
+      lifeStage: (g === 'male' && ['pregnant', 'breastfeeding', 'perimenopause', 'menopause'].includes(s.lifeStage)) ? 'standard' : s.lifeStage
+    }));
+  };
+
+  setUnits = (u) => this.setState({ units: u });
+
+  setMacroTarget = (t) => this.setState({ macroTarget: t });
+
+  calculate = () => {
+    const s = this.state;
+    const manualBmr = parseFloat(s.manualBmr);
+    const hasManualBmr = !isNaN(manualBmr) && manualBmr > 0;
+    const age = parseFloat(s.age);
+    let heightCm, weightKg;
+    if (s.units === 'metric') {
+      heightCm = parseFloat(s.heightCm);
+      weightKg = parseFloat(s.weightKg);
+    } else {
+      const ft = parseFloat(s.heightFt) || 0;
+      const inch = parseFloat(s.heightIn) || 0;
+      heightCm = (ft * 30.48) + (inch * 2.54);
+      weightKg = parseFloat(s.weightLb) * 0.453592;
+    }
+    if (!hasManualBmr && (!age || age <= 0 || !heightCm || heightCm <= 0 || !weightKg || weightKg <= 0)) {
+      this.setState({ error: 'Fill in age, height and weight to calculate (or enter a known BMR).', result: null });
+      return;
+    }
+    const bmr = hasManualBmr ? manualBmr : (s.gender === 'male'
+      ? (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5
+      : (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161);
+    const activity = Component.ACTIVITY_LEVELS.find((a) => a.value === s.activity) || Component.ACTIVITY_LEVELS[2];
+    const stageInfo = Component.LIFE_STAGE_INFO[s.lifeStage] || Component.LIFE_STAGE_INFO.standard;
+    const tdee = (bmr * activity.mult) + stageInfo.adjust;
+    const cutPct = (this.props.cutPct ?? 20) / 100;
+    const gainPct = (this.props.gainPct ?? 15) / 100;
+    const m = Component.MACRO_PRESETS[this.props.macroPreset] || Component.MACRO_PRESETS.balanced;
+    this.setState({
+      error: '',
+      result: {
+        bmr: Math.round(bmr),
+        tdee: Math.round(tdee),
+        cut: Math.round(tdee * (1 - cutPct)),
+        maintain: Math.round(tdee),
+        gain: Math.round(tdee * (1 + gainPct)),
+        macroPreset: m,
+        note: stageInfo.note,
+        bmrSource: hasManualBmr ? 'Using the BMR you entered.' : 'Estimated via Mifflin\u2013St Jeor.'
+      }
+    });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const segCls = (active) => `flex-1 text-center px-3 py-2.5 text-sm cursor-pointer border-none transition-colors ${active ? 'bg-teal-600 text-white' : 'bg-white text-[#3d4a46] hover:bg-teal-50'}`;
+
+    const genderOptions = [
+      { label: 'Female', onClick: () => this.setGender('female'), cls: segCls(s.gender === 'female') },
+      { label: 'Male', onClick: () => this.setGender('male'), cls: segCls(s.gender === 'male') }
+    ];
+    const unitOptions = [
+      { label: 'Metric', onClick: () => this.setUnits('metric'), cls: segCls(s.units === 'metric') },
+      { label: 'Imperial', onClick: () => this.setUnits('imperial'), cls: segCls(s.units === 'imperial') }
+    ];
+    const lifeStageOptions = Object.entries(Component.LIFE_STAGE_INFO)
+      .filter(([key]) => s.gender === 'female' || !['pregnant', 'breastfeeding', 'perimenopause', 'menopause'].includes(key))
+      .map(([value, info]) => ({ value, label: info.label, selected: value === s.lifeStage }));
+    const activityOptions = Component.ACTIVITY_LEVELS.map((a) => ({ value: a.value, label: `${a.label} \u2014 ${a.desc}`, selected: a.value === s.activity }));
+    const stageAdjust = (Component.LIFE_STAGE_INFO[s.lifeStage] || {}).adjust || 0;
+
+    const TARGET_META = {
+      cut: { label: 'Lose weight' },
+      maintain: { label: 'Maintain' },
+      gain: { label: 'Gain weight' }
+    };
+    let targetCards = [];
+    let selectedTargetLabel = 'maintenance';
+    let macros = null;
+    if (s.result) {
+      targetCards = ['cut', 'maintain', 'gain'].map((key) => {
+        const active = s.macroTarget === key;
+        return {
+          label: TARGET_META[key].label,
+          kcal: s.result[key],
+          onClick: () => this.setMacroTarget(key),
+          cls: active ? 'bg-teal-50 border border-teal-200' : 'bg-white border border-[#d6e5e0] hover:bg-teal-50/40',
+          labelCls: active ? 'text-teal-600' : 'text-[#5b6b66]'
+        };
+      });
+      const targetKcal = s.result[s.macroTarget] ?? s.result.maintain;
+      const m = s.result.macroPreset;
+      macros = {
+        proteinG: Math.round((targetKcal * m.p) / 4),
+        carbG: Math.round((targetKcal * m.c) / 4),
+        fatG: Math.round((targetKcal * m.f) / 9),
+        proteinPct: Math.round(m.p * 100),
+        carbPct: Math.round(m.c * 100),
+        fatPct: Math.round(m.f * 100)
+      };
+      selectedTargetLabel = s.macroTarget === 'maintain' ? 'maintenance' : TARGET_META[s.macroTarget].label.toLowerCase();
+    }
+    const result = s.result ? { ...s.result, ...macros } : null;
+
+    return {
+      age: s.age, heightCm: s.heightCm, heightFt: s.heightFt, heightIn: s.heightIn,
+      weightKg: s.weightKg, weightLb: s.weightLb, activity: s.activity, lifeStage: s.lifeStage,
+      manualBmr: s.manualBmr, onManualBmr: this.setField('manualBmr'),
+      genderOptions, unitOptions, lifeStageOptions, activityOptions,
+      isMetric: s.units === 'metric',
+      isImperial: s.units === 'imperial',
+      tdeeNoteSuffix: stageAdjust ? ` plus a life-stage adjustment` : '',
+      onAge: this.setField('age'),
+      onHeightCm: this.setField('heightCm'),
+      onHeightFt: this.setField('heightFt'),
+      onHeightIn: this.setField('heightIn'),
+      onWeightKg: this.setField('weightKg'),
+      onWeightLb: this.setField('weightLb'),
+      onLifeStage: this.setField('lifeStage'),
+      onActivity: this.setField('activity'),
+      onCalculate: this.calculate,
+      error: s.error,
+      result: result,
+      targetCards,
+      selectedTargetLabel
+    };
+  }
+}
+</script>
+</body>
+</html>
